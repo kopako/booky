@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import sys
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -18,6 +18,7 @@ from environ import Env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 env: Env = Env()
 env.read_env(BASE_DIR / '.env')
@@ -52,8 +53,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     'drf_yasg',
+    'djmoney',
 
     'apps.user.apps.UserConfig',
+    'apps.ads.apps.AdsConfig',
 ]
 
 MIDDLEWARE = [
@@ -166,7 +169,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'EXCEPTION_HANDLER': 'requestlogs.views.exception_handler',
-
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
 }
 
 SIMPLE_JWT = {
@@ -226,3 +231,5 @@ LOGGING = {
         },
     },
 }
+
+CURRENCIES = ('USD', 'EUR', 'HUF')
