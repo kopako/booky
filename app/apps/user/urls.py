@@ -2,7 +2,7 @@ from django.urls import path
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views.user import LogOutAPIView, RegisterUserAPIView, LogInAPIView
+from .views.user import LogOutAPIView, RegisterUserAPIView, LogInAPIView, WhoAmIView
 
 app_name = "user"
 
@@ -14,4 +14,5 @@ urlpatterns = [
                   path('auth-register/', RegisterUserAPIView.as_view()),
                   path('auth-login-jwt/', TokenObtainPairView.as_view()),
                   path('token-refresh/', TokenRefreshView.as_view()),
+                  path('whoami/', WhoAmIView.as_view()),
     ]
