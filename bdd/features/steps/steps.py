@@ -11,17 +11,25 @@ from assertpy import assert_that, fail
 @given('a request url {url}')
 def step_url(context, url):
     context.url = url
-    
-@given('indexes from {start} to {end}')
-def step_url(context, start, end):
-    context.indexes = [i for i in range(start, end)]
-
 
 @given('a request json payload')
 def step_impl(context):
     json_dict = context.text
     context.payload = json_dict
 
+@given('an authenticated session with email: {email} and password: {password}')
+def step_impl(context, email, password):
+    auth_response: requests.Response = requests.request(
+        url='http://localhost:8000/api/v1/u/auth-login-jwt/',
+        method="POST", 
+        data=json.dumps({'email': email, 'password': password}),
+        headers={'Content-Type': 'application/json'}
+    )
+    context.access_token = auth_response.json()['access']
+    context.refresh_token = auth_response.json()['refresh']
+    context.auth_session = requests.Session()
+    context.auth_session.headers.update({'Authorization': f'Bearer {context.access_token}'})
+    context.auth_session.headers.update({'Content-Type': 'application/json'})
 
 @when('the request sends {method}')
 def step_request(context, method):
@@ -31,6 +39,10 @@ def step_request(context, method):
     context.response = requests.request(
         method=method, url=context.url, headers=headers, data=context.payload)
 
+@when('the auth request sends {method}')
+def step_request(context, method):
+    context.response = context.auth_session.request(
+        method=method, url=context.url, data=context.payload)
 
 @then('response is OK')
 def step_response(context):
