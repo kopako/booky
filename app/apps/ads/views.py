@@ -7,6 +7,7 @@ import django_filters
 from .filters import AdvertisementFilter
 from .serializers import LocationSerializer, RealEstateTypeSerializer, AdvertisementSerializer
 from .models import (Location, RealEstateType, Advertisement)
+from .permissions import IsOwner, IsLandlord
 
 
 class LocationView(viewsets.ModelViewSet):
@@ -35,6 +36,15 @@ class AdvertisementView(viewsets.ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(is_active=True)
         return queryset
+
+    def get_permissions(self):
+        if self.request.method in ('PATCH', 'PUT', 'DELETE'):
+            permission_classes = [IsOwner, IsLandlord]
+        elif self.request.method in ('POST',):
+            permission_classes = [IsLandlord,]
+        else:
+            permission_classes = [permissions.IsAuthenticated,]
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user, is_active=True)
