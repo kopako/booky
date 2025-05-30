@@ -32,6 +32,7 @@ class Advertisement(models.Model):
     price = MoneyField(max_digits=14, decimal_places=2, default_currency='HUF')
     rooms_count = models.PositiveIntegerField()
     beds_count = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     real_estate_type = models.ForeignKey(RealEstateType, models.SET_NULL, null=True, blank=True)
