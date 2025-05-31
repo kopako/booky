@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from drf_writable_nested.serializers import WritableNestedModelSerializer
-from drf_writable_nested.mixins import UniqueFieldsMixin
 
 from .models import (Advertisement, Location, RealEstateType)
 from ..user.models.user import User
