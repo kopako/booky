@@ -37,12 +37,12 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.save()
         return Response({'detail': 'Booking approved'})
 
-    @action(detail=True, method=['post'], url_path='cancel')
+    @action(detail=True, methods=['post'], url_path='cancel')
     def cancel(self):
         booking = self.get_object()
         if booking.canceled:
             return Response({'detail': 'Booking is already canceled'}, status=status.HTTP_400_BAD_REQUEST)
-        if self.request != booking.rentee:
+        if self.request.user != booking.rentee:
             return Response({'detail': 'It is not your booking'},status=status.HTTP_400_BAD_REQUEST)
         booking.canceled = True
         booking.save()
