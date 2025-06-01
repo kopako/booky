@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 from ..ads.models import Advertisement
 from ..user.models.user import User
@@ -16,14 +17,10 @@ class Booking(models.Model):
 
     rentee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='booking')
 
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(end__gt=models.F('start')),
-                name='valid_dates'
-            ),
-            models.UniqueConstraint(
-                fields=['advertisement', 'start', 'end'],
-                name='advertisement_start_end'
-            )
-        ]
+    def clean(self):
+        super().clean()
+
+
+    def save(self, **kwargs):
+        self.full_clean()
+        super().save(**kwargs)
