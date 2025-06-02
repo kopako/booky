@@ -52,7 +52,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking = self.get_object()
         if booking.canceled:
             return Response({'detail': 'Booking is already canceled'}, status=status.HTTP_400_BAD_REQUEST)
-        if self.request.user != booking.rentee:
+        if self.request.user != booking.rentee and self.request.user != booking.advertisement.owner:
             return Response({'detail': 'It is not your booking'}, status=status.HTTP_400_BAD_REQUEST)
         if timezone.now().date() > booking.cancel_until:
             return Response(
