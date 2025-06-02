@@ -40,7 +40,8 @@ class LogInAPIView(APIView):
 
 
 class LogOutAPIView(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         response = Response(status=status.HTTP_200_OK)
         refresh_token = RefreshToken(request.COOKIES.get('refresh_token'))
@@ -70,12 +71,7 @@ class RegisterUserAPIView(APIView):
 
 class WhoAmIView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer = RegisterSerializer
 
     def get(self, request):
-        user = request.user
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "is_staff": user.is_staff,
-        })
+        return Response(data=self.serializer(request.user).data, status=status.HTTP_200_OK)
