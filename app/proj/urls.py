@@ -39,4 +39,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/v1/u/", include("apps.user.urls")),
     path("api/v1/a/", include("apps.ads.urls")),
+    path("api/v1/b/", include("apps.bookings.urls")),
 ]
