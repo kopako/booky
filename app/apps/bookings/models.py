@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q
+from rest_framework import serializers
 
 from ..ads.models import Advertisement
 from ..user.models.user import User
@@ -19,7 +19,8 @@ class Booking(models.Model):
 
     def clean(self):
         super().clean()
-
+        if self.advertisement and self.rentee and self.rentee == self.advertisement.owner:
+            raise serializers.ValidationError({"model_detail": "Owner cannot book their own appartment."})
 
     def save(self, **kwargs):
         self.full_clean()

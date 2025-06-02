@@ -27,13 +27,13 @@ class BookingSerializer(serializers.ModelSerializer):
         end = attrs.get('end')
 
         if start <= cancel_until:
-            raise serializers.ValidationError({"detail":"cancel_until date must be after start date."})
+            raise serializers.ValidationError({"detail": "cancel_until date must be after start date."})
 
         if start < timezone.now().date():
-            raise serializers.ValidationError({"detail":"start date must be today or in the future."})
+            raise serializers.ValidationError({"detail": "start date must be today or in the future."})
 
         if end <= start:
-            raise serializers.ValidationError({"detail":"end date must be after start date."})
+            raise serializers.ValidationError({"detail": "end date must be after start date."})
 
         # Check for overlapping ranges
         overlapping = Booking.objects.filter(
@@ -45,8 +45,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
         if overlapping.exists():
             raise serializers.ValidationError({
-                    "detail":"overlapping",
-                    "bookings": list(overlapping.values_list('pk', flat=True))
-                })
+                "detail": "overlapping",
+                "bookings": list(overlapping.values_list('pk', flat=True))
+            })
         return attrs
-
