@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'proj.wsgi.application'
 if env.bool("USE_REMOTE_DB", default=False):
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
+            'ENGINE': env('DB_ENGINE'),
             'NAME': env('DB_NAME'),
             'USER': env('DB_USER'),
             'PASSWORD': env('DB_PASSWORD'),

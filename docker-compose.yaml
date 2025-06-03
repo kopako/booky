@@ -1,4 +1,29 @@
 services:
+  restapi:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: django-booky-app
+    ports:
+      - '8000:8000'
+    environment:
+      - DEBUG=${DEBUG}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+#      - DJANGO_CSRF_TRUSTED_ORIGINS=${DJANGO_CSRF_TRUSTED_ORIGINS}
+#      - DB_ENGINE=${DB_ENGINE}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+    env_file:
+      - .app/.env
+    depends_on:
+      - db
+    network:
+      - back-network
+
   db:
     image: mysql:latest
     environment:
@@ -10,22 +35,25 @@ services:
       - my-db-volume:/var/lib/mysql
     secrets:
       - DB_PASSWORD
-  mail-dev:
-    image: maildev/maildev
-    restart: always
-    environment:
-      - TZ=Europe/CEST
-      - MAILDEV_WEB_PORT=1080
-      - MAILDEV_SMTP_PORT=1025
     network:
       - back-network
-    ports:
-      - "1080:1080"
-      - "1025:1025"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
+
+#  mail-dev:
+#    image: maildev/maildev
+#    restart: always
+#    environment:
+#      - TZ=Europe/CEST
+#      - MAILDEV_WEB_PORT=1080
+#      - MAILDEV_SMTP_PORT=1025
+#    network:
+#      - back-network
+#    ports:
+#      - "1080:1080"
+#      - "1025:1025"
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "1m"
 
 volumes:
   my-db-volume:
