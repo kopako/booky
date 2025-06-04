@@ -1,26 +1,26 @@
 import os
+import random
+
 import django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'proj.settings')
 django.setup()
 
 from djmoney.money import Money
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import QuerySet
 
+from apps.ads_feedback.models import Feedback
 from apps.bookings.models import Booking
 from apps.ads.models import RealEstateType, Advertisement, Location
 from apps.user.models.user import User
 
 
-def delete_all_users():
-    for u in User.objects.all():
-        u.delete()
-
-
-def create_users(n: int):
-    for i in range(n):
-        username = f"user{i}"
-        email = f"user{i}@example.com"
+def create_users(n: int, is_landlord: bool = False):
+    for i in range(1, n + 1):
+        username = f"landlord{i}" if is_landlord else f"rentee{i}"
+        email = f"{username}@example.com"
         password = "defaultpassword123"
 
         if not User.objects.filter(username=username).exists():
@@ -28,7 +28,7 @@ def create_users(n: int):
                 username=username,
                 email=email,
                 password=password,
-                is_landlord=True,
+                is_landlord=is_landlord,
             )
 
 
@@ -39,12 +39,15 @@ def create_realestatetypes():
 
 
 def create_advertisements(n: int):
-    for i in range(n):
+    landlords: QuerySet = User.objects.filter(is_landlord=True)
+    advertisements = []
+    for i in range(1, n + 1):
         country = "Hungary"
         city = "Budapest"
         address = f"Bartok Bela ut 3{i}"
         index = str(i) * 4
-        location = Location(country=country, city=city, address=address, index=index).save()
+        location = (Location(country=country, city=city, address=address, index=index))
+        location.save()
 
         real_estate_type = RealEstateType.objects.get(type="room")
         title = f"title{i}"
@@ -53,9 +56,9 @@ def create_advertisements(n: int):
         rooms_count = i
         beds_count = i
         is_active = True
-        owner = User.objects.get(email=f"user{i}@example.com")
+        owner = landlords[i % landlords.count()]
 
-        advertisement = Advertisement(
+        advertisements.append(Advertisement(
             title=title,
             description=description,
             price=price,
@@ -65,23 +68,66 @@ def create_advertisements(n: int):
             is_active=is_active,
             location=location,
             owner=owner,
-        ).save()
+        ))
+    Advertisement.objects.bulk_create(advertisements)
 
-def create_bookings(n: int):
-    for booking_i in range(n):
-        adv_i = (booking_i+1) % Advertisement.objects.count()
-        booking_date = timezone.now().date() + timedelta(days=25)
-        Booking.objects.create(
+
+def create_bookings(n: int, minus_days: int = 0):
+    rentees: QuerySet = User.objects.filter(is_landlord=False)
+    ads = Advertisement.objects.all()
+    print('=+= ' * 90)
+    # [print(a.id) for a in ads]
+    print(ads.count())
+    print()
+    print('=+= ' * 30)
+    bookings = []
+    for booking_i in range(1, n + 1):
+        adv_i = booking_i % Advertisement.objects.count()
+        booking_date = (timezone.now().date() + timedelta(days=booking_i))
+        booking_date = booking_date - timedelta(days=minus_days) if minus_days else booking_date
+        bookings.append(Booking(
             start=booking_date,
-            end=booking_date + timedelta(days=2),
+            end=booking_date + timedelta(days=booking_i + 2),
             cancel_until=booking_date - timedelta(days=2),
-            advertisement=Advertisement.objects.get(title=f"title{adv_i}"), # rentee != landlord
-            rentee=User.objects.get(email=f"user{booking_i}@example.com"),
-        ).save()
+            advertisement=ads[adv_i % ads.count()],
+            rentee=rentees[booking_i % rentees.count()],
+            canceled=(booking_i % 7 == 0),
+            approved=(booking_i % 3 == 0),
+        ))
+    Booking.objects.bulk_create(bookings)
+
+def delete_all_entities(model):
+    [entity.delete() for entity in model.objects.all()]
+
+
+def clear():
+    delete_all_entities(Feedback)
+    delete_all_entities(Booking)
+    delete_all_entities(Advertisement)
+    delete_all_entities(User)
+
+
+def create_feedback():
+    # ads = Advertisement.objects.all()
+    # for ad in ads:
+    rentee_ads = Booking.objects.filter(end__lte='2025-01-01').values('rentee', 'advertisement').distinct()
+    feedbacks = []
+    for rentee_ad in rentee_ads:
+        feedbacks.append(Feedback(
+            rentee=User.objects.get(pk=rentee_ad['rentee']),
+            advertisement=Advertisement.objects.get(pk=rentee_ad['advertisement']),
+            review_message='booking.advertisement.description',
+            rating_value=random.randint(1, 10)
+        ))
+    Feedback.objects.bulk_create(feedbacks)
 
 
 if __name__ == "__main__":
     create_users(4)
+    create_users(4, True)
     create_realestatetypes()
-    create_advertisements(4)
-    create_bookings(4)
+    create_advertisements(40)
+    create_bookings(100)
+    create_bookings(700, 5400)
+    create_feedback()
+    # clear()
