@@ -30,6 +30,11 @@ class Feedback(models.Model):
                 'detail': "This user haven't finished renting this property."
             })
 
+    def save(self, **kwargs):
+        self.full_clean()
+        super().save(**kwargs)
+
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
