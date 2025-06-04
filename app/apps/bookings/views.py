@@ -3,9 +3,13 @@ from rest_framework import permissions
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import filters
+
 from django.db.models import Q
 from django.utils import timezone
+import django_filters
 
+from .filters import BookingFilter
 from .models import Booking
 from .permissions import IsLandlordOrAdmin
 from .serializers import BookingSerializer
@@ -13,6 +17,8 @@ from .serializers import BookingSerializer
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.OrderingFilter)
+    filterset_class = BookingFilter
 
     def get_queryset(self):
         queryset: QuerySet = Booking.objects.select_related('advertisement', 'rentee')

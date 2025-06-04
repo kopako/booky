@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'apps.user.apps.UserConfig',
     'apps.ads.apps.AdsConfig',
     'apps.bookings.apps.BookingsConfig',
+    'apps.ads_feedback.apps.AdsFeedbackConfig',
 ]
 
 MIDDLEWARE = [
