@@ -25,7 +25,7 @@ class Feedback(models.Model):
                 'detail': "This user haven't rent this property."
             })
 
-        if not booking.filter(end__lte=timezone.now().date(), cancel=False, approved=True).exists():
+        if not booking.filter(end__lte=timezone.now().date(), canceled=False, approved=True).exists():
             raise serializers.ValidationError({
                 'detail': "This user haven't finished renting this property."
             })
