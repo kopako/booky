@@ -26,8 +26,8 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='avg_rating')
     def avg_rating(self, request, pk=None):
         avg_rating = (Feedback.objects
-            .filter(advertisement=pk)
-            .aggregate(avg=Avg('rating_value'))['avg']
+        .filter(advertisement=pk)
+        .aggregate(avg=Avg('rating_value'))['avg']
         )
 
         if avg_rating is None:
@@ -38,4 +38,13 @@ class FeedbackViewSet(viewsets.ModelViewSet):
             "average_rating": round(avg_rating, 1)
         })
 
+    @action(detail=True, methods=['get'], url_path='feedback')
+    def avg_rating(self, request, pk=None):
+        feedbacks = (Feedback.objects.select_related('rentee', 'advertisement')
+                      .filter(advertisement=pk)
+                      )
 
+        if not feedbacks:
+            return Response({"detail": "No ratings found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ReadFeedbackSerializer(feedbacks, many=True)
+        return Response(serializer.data)
