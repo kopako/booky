@@ -39,10 +39,10 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         })
 
     @action(detail=True, methods=['get'], url_path='feedback')
-    def avg_rating(self, request, pk=None):
+    def for_ad(self, request, pk=None):
         feedbacks = (Feedback.objects.select_related('rentee', 'advertisement')
-                      .filter(advertisement=pk)
-                      )
+                     .filter(advertisement=pk)
+                     )
 
         if not feedbacks:
             return Response({"detail": "No ratings found."}, status=status.HTTP_404_NOT_FOUND)
